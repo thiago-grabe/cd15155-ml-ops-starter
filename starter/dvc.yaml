@@ -1,0 +1,9 @@
+# TODO (Task 1)
+# Define a two-stage data pipeline. 
+# The first stage `prepare` downloads and prepares the financial phrase bank 
+# dataset from HuggingFace. You can use the provided script `load_data.py` in
+# scripts as a dependency.
+# The second stage `clean`: takes raw social media posts and applies different 
+# cleaning steps. You can use the provided script `clean_data.py` for this purpose
+# Makse sure to use parameters to set values of different hyperparameters in the scripts
+# Documentation : https://doc.dvc.org/user-guide/pipelines/defining-pipelines
