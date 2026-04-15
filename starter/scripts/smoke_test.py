@@ -2,8 +2,8 @@
 Smoke test to confirm the FinBERT model artifact loads correctly
 and runs a basic inference.
 
-Usage:
-    python smoke_test.py
+Run:
+    python starter/scripts/smoke_test.py
 """
 
 import sys

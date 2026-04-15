@@ -3,6 +3,9 @@ Load and prepare the financial_phrasebank dataset.
 
 Loads the dataset from HuggingFace, splits into train/test, and saves the splits to data/train.csv
 and data/test.csv.
+
+Run:
+    python starter/scripts/load_data.py
 """
 
 import os

@@ -1,8 +1,8 @@
 """
 Clean raw Bluesky financial posts for use with FinBERT inference.
 
-Input:  data/raw_stream.csv
-Output: data/stream.csv
+Run:
+    python starter/scripts/clean_data.py
 """
 
 import os
