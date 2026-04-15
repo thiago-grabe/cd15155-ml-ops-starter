@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Env
+.env
+
+# DVC
+/models
+*.dvc
+!.dvc
+!.dvc/
+!.dvcignore
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+.idea/
+.vscode/
