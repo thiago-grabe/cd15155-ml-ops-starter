@@ -1,0 +1,70 @@
+# TODO (Task 5)
+# Complete this CI/CD pipeline by implementing the following jobs:
+# 1. test          — install dependencies and run pytest tests/ with MODEL_SOURCE=huggingface
+# 2. deepchecks    — install dependencies and run scripts/run_deepchecks.py with MODEL_SOURCE=huggingface
+#                    Both jobs must run in parallel after lint (needs: lint)
+# 3. build-and-push — build the Docker image, tag it with the commit SHA, log in to Amazon ECR,
+#                    and push both the SHA and latest tags (needs: test, deepchecks)
+# 4. deploy        — render the ECS task definition with the new image and deploy to ECS Fargate
+# Documentation: https://docs.github.com/en/actions/writing-workflows
+
+name: test-and-deploy
+
+on:
+  push:
+    branches: [main]
+
+# TODO (Task 5)
+# Before running this pipeline, make sure you have created the following AWS resources:
+# 1. An ECR repository named finbert-api to store your Docker images
+# 2. An ECS cluster named finbert-cluster
+# 3. An ECS service named finbert-api-service running on that cluster
+# 4. An ECS task definition named finbert-api
+# Also add AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN,
+# AWS_REGION, and ECR_REGISTRY as GitHub repository secrets.
+env:
+  ECR_REPOSITORY: finbert-api
+  TASK_DEFINITION: finbert-api
+  CONTAINER_NAME: finbert-api
+  ECS_SERVICE: finbert-api-service
+  ECS_CLUSTER: finbert-api
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check app/ scripts/ tests/
+
+  # Integration test
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+
+
+  # Deepchecks
+  deepchecks:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+
+
+  # Build and push Docker image to ECR
+  build:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    needs: [test, deepchecks]
+    steps:
+
+
+  # Deploy to ECS
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+
