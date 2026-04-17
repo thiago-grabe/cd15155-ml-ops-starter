@@ -57,7 +57,7 @@ def compute_metrics(y_true: list[str], y_pred: list[str]) -> dict:
 
 
 def main():
-    model_id = os.getenv("MODEL_ID", "ProsusAI/finbert")
+    model_id = os.getenv("HF_MODEL_ID", "baptle/FinBERT_market_based")
     test_path = os.path.join("data", "test.csv")
 
     texts, y_true = load_test_data(test_path)

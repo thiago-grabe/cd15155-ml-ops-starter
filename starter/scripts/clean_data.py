@@ -1,8 +1,8 @@
 """
 Clean raw Bluesky financial posts for use with FinBERT inference.
 
-Run:
-    python starter/scripts/clean_data.py
+Input:  data/raw_stream.csv
+Output: data/stream.csv
 """
 
 import os
@@ -17,7 +17,7 @@ def load_params() -> dict:
         return yaml.safe_load(f)["clean"]
 
 
-# Similar to the financial_phrasebank dataset, we will only keep posts that contain financial keywords
+# Only keep posts that contain financial keywords to filter out noise
 FINANCIAL_KEYWORDS = {
     "stock",
     "stocks",

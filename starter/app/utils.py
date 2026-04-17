@@ -18,11 +18,15 @@ def load_classifier():
     model_source = os.getenv("MODEL_SOURCE", "mlflow")
 
     if model_source == "huggingface":
-        hf_model_id = os.getenv("HF_MODEL_ID", "ProsusAI/finbert")
+        hf_model_id = os.getenv("HF_MODEL_ID", "baptle/FinBERT_market_based")
         print(f"Loading model from HuggingFace: {hf_model_id}")
-        return pipeline("text-classification", model=hf_model_id, tokenizer=hf_model_id, device="cpu")
+        return pipeline(
+            "text-classification",
+            model=hf_model_id,
+            tokenizer=hf_model_id,
+            device="cpu",
+        )
 
-    # TODO move import to the top once MLflow is installed
     import mlflow.transformers
 
     model_name = os.getenv("MODEL_NAME", "finbert")

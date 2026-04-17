@@ -1,11 +1,8 @@
 """
-Load and prepare the financial_phrasebank dataset.
+Load and prepare the financial sentiment dataset.
 
 Loads the dataset from HuggingFace, splits into train/test, and saves the splits to data/train.csv
 and data/test.csv.
-
-Run:
-    python starter/scripts/load_data.py
 """
 
 import os
@@ -13,7 +10,10 @@ import os
 import pandas as pd
 import yaml
 from datasets import load_dataset
+from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
+
+load_dotenv()
 
 
 def load_params() -> dict:
@@ -29,17 +29,18 @@ def load_and_split():
     train_path = os.path.join(data_dir, "train.csv")
     test_path = os.path.join(data_dir, "test.csv")
 
-    print("Loading financial_phrasebank dataset...")
-    dataset = load_dataset("financial_phrasebank", "sentences_allagree")
+    dataset_name = os.getenv("HF_DATASET_ID")
+    print(f"Loading {dataset_name} dataset...")
+    dataset = load_dataset(dataset_name)
 
     # The dataset only has a train split
     # We create our own test split
     df = pd.DataFrame(dataset["train"]).rename(
-        columns={"sentence": "text", "label": "label"}
+        columns={"Title": "text", "Global Sentiment": "label"}
     )
 
     # Map integer labels to string labels matching FinBERT output
-    label_map = {0: "negative", 1: "neutral", 2: "positive"}
+    label_map = {1: "positive", 0: "neutral", -1: "negative"}
     df["label"] = df["label"].map(label_map)
 
     train_df, test_df = train_test_split(

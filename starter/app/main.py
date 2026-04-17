@@ -71,12 +71,27 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Sentiment Analysis API", lifespan=lifespan)
 
 
-# TODO (Task 3): Implement run_predictions() to run batch inference on a list of
-# texts, measure end-to-end latency, and return a list of PredictionResult objects.
-# TODO (Task 6): Instrument this function with the Prometheus counter and histogram
-# defined above to track prediction counts and latency.
 def run_predictions(texts: list[str]) -> list[PredictionResult]:
-    raise NotImplementedError
+    try:
+        # TODO (Task 3): Log a warning using log() if any input text exceeds 2000
+        # characters — the model will silently truncate it, so this makes it visible.
+
+        # TODO (Task 3): Record the start time, run batch inference using
+        # classifiers["sentiment"], and compute latency_ms from start to finish.
+
+        # TODO (Task 3): Build and return a list of PredictionResult objects from
+        # the inference results (each result has "label" and "score" keys).
+
+        # TODO (Task 6): Observe latency_ms on PREDICTION_LATENCY and increment
+        # PREDICTION_REQUESTS (labelled by sentiment) for each prediction.
+
+        # TODO (Task 6): Log each prediction using log() with sentiment, confidence,
+        # and latency_ms fields.
+        raise NotImplementedError
+    except Exception as e:
+        # TODO (Task 6): Increment PREDICTION_ERRORS, log the error using log(),
+        # then re-raise.
+        raise e
 
 
 # TODO (Task 6): Implement the /metrics endpoint.
@@ -98,9 +113,8 @@ def health():
 
 # TODO: Implement the POST /predict endpoint.
 # Accept a PredictRequest and return a PredictionResult.
-# Make sure to validate th input before you run predictions
 # Return HTTP 503 if the model is not loaded
-# and HTTP 422 if the texts list is empty.
+# Return HTTP 422 if the text is empty
 @app.post("/predict", response_model=PredictionResult)
 def predict(request: PredictRequest):
     raise NotImplementedError

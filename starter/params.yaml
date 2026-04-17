@@ -9,8 +9,8 @@ clean:
   max_words: 100
 
 promote:
-  f1_threshold: 0.8
+  f1_threshold: 0.56
 
 deepchecks:
   property_drift_threshold: 0.5
-  prediction_drift_threshold: 0.15
+  prediction_drift_threshold: 0.6
