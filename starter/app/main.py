@@ -5,42 +5,43 @@ Endpoints:
     GET  /health          — service health status
     POST /predict         — single headline sentiment
     POST /predict/batch   — batch headline sentiment
-    GET  /metrics         — Prometheus metrics
 """
 
+import logging
 import os
+import sys
+import time
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from utils import load_classifier
 
-# TODO (Task 6)
-# Configure the Python logger using basicConfig.
+# `python app/main.py` puts app/ on sys.path (flat import works, `app` package does not).
+# `uvicorn app.main:app` and `pytest` put the project root on sys.path (package import works).
+# Catch ModuleNotFoundError specifically: a broad ImportError would mask a genuinely
+# broken app.utils (e.g. transformers missing) behind a misleading fallback.
+try:
+    from app.utils import load_classifier
+except ModuleNotFoundError:
+    from utils import load_classifier
+
+logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
+logger = logging.getLogger("finbert-api")
 
 
-# TODO (Task 6)
-# Implement a structured logging helper that emits each log entry as a JSON
-# object containing at least a timestamp, level, and message field.
 def log(level: str, message: str, **kwargs) -> None:
-    pass
+    """Emit a log record. Upgraded to structured JSON in the monitoring change."""
+    extra = "  ".join(f"{k}={v}" for k, v in kwargs.items())
+    logger.log(getattr(logging, level.upper(), logging.INFO), f"{message} {extra}".strip())
 
-
-# TODO (Task 6)
-# Define the following Prometheus metrics:
-# 1. A Counter for the total number of prediction requests, labelled by sentiment.
-# 2. A Histogram for prediction latency in milliseconds.
-# 3. A Counter for the total number of prediction errors.
-# Then instrument run_predictions() to update each metric accordingly.
-# Documentation: https://prometheus.io/docs/concepts/metric_types/
-PREDICTION_REQUESTS = None
-PREDICTION_LATENCY = None
-PREDICTION_ERRORS = None
 
 load_dotenv()
 
 classifiers = {}
+
+MAX_TEXT_CHARS = 2000
+MODEL_MAX_TOKENS = 512
 
 
 class PredictRequest(BaseModel):
@@ -60,9 +61,15 @@ class PredictionResult(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    log("INFO", "Loading model...")
-    classifiers["sentiment"] = load_classifier()
-    log("INFO", "Model loaded successfully")
+    log("INFO", "Loading model...", model_source=os.getenv("MODEL_SOURCE", "mlflow"))
+    try:
+        classifiers["sentiment"] = load_classifier()
+        log("INFO", "Model loaded successfully")
+    except Exception as e:
+        # Do not abort startup: an unloaded model must surface as HTTP 503 from
+        # /health so the orchestrator can restart us, rather than a crash loop
+        # that never binds a port and reports nothing useful.
+        log("ERROR", "Model failed to load", error=str(e), error_type=type(e).__name__)
     yield
     classifiers.clear()
     log("INFO", "Model unloaded")
@@ -72,61 +79,90 @@ app = FastAPI(title="Sentiment Analysis API", lifespan=lifespan)
 
 
 def run_predictions(texts: list[str]) -> list[PredictionResult]:
+    """Run batch inference and return one result per input text."""
     try:
-        # TODO (Task 3): Log a warning using log() if any input text exceeds 2000
-        # characters — the model will silently truncate it, so this makes it visible.
+        for text in texts:
+            if len(text) > MAX_TEXT_CHARS:
+                log(
+                    "WARNING",
+                    "Input exceeds 2000 characters; the model will truncate it",
+                    text_length=len(text),
+                    max_chars=MAX_TEXT_CHARS,
+                )
 
-        # TODO (Task 3): Record the start time, run batch inference using
-        # classifiers["sentiment"], and compute latency_ms from start to finish.
+        start = time.perf_counter()
+        # truncation/max_length must be passed at call time: a pipeline restored from
+        # the MLflow registry does not carry the kwargs evaluate.py built it with.
+        raw = classifiers["sentiment"](
+            texts, truncation=True, max_length=MODEL_MAX_TOKENS
+        )
+        total_ms = (time.perf_counter() - start) * 1000.0
+        # Per-item latency, so the number means "latency per prediction" identically
+        # for /predict and /predict/batch.
+        latency_ms = round(total_ms / max(len(texts), 1), 2)
 
-        # TODO (Task 3): Build and return a list of PredictionResult objects from
-        # the inference results (each result has "label" and "score" keys).
-
-        # TODO (Task 6): Observe latency_ms on PREDICTION_LATENCY and increment
-        # PREDICTION_REQUESTS (labelled by sentiment) for each prediction.
-
-        # TODO (Task 6): Log each prediction using log() with sentiment, confidence,
-        # and latency_ms fields.
-        raise NotImplementedError
+        results = []
+        for text, item in zip(texts, raw):
+            sentiment = str(item["label"]).lower()
+            confidence = float(item["score"])
+            results.append(
+                PredictionResult(
+                    text=text,
+                    sentiment=sentiment,
+                    confidence=confidence,
+                    latency_ms=latency_ms,
+                )
+            )
+        return results
     except Exception as e:
-        # TODO (Task 6): Increment PREDICTION_ERRORS, log the error using log(),
-        # then re-raise.
-        raise e
+        log("ERROR", "Prediction failed", error=str(e), error_type=type(e).__name__)
+        raise
 
 
-# TODO (Task 6): Implement the /metrics endpoint.
-# Return the Prometheus metrics in the correct format using generate_latest()
-# and CONTENT_TYPE_LATEST.
-# Documentation: https://prometheus.io/docs/instrumenting/exposition_formats/
-@app.get("/metrics")
-def metrics():
-    raise NotImplementedError
+def run_prediction(text: str) -> tuple[list[PredictionResult], float]:
+    """Single-text helper: returns (predictions, measured latency in ms)."""
+    predictions = run_predictions([text])
+    return predictions, predictions[0].latency_ms
 
 
-# TODO: Implement the /health endpoint.
-# Return {"status": "ok"} when the model
-# is loaded, and raise an HTTP 503 error when it is not.
+def _require_model() -> None:
+    """Guard executed before any request validation.
+
+    Availability is a precondition for validation: answering 422 to a request that
+    could not have been served regardless of its body would be wrong, so this runs first.
+    """
+    if classifiers.get("sentiment") is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+
 @app.get("/health")
 def health():
-    raise NotImplementedError
+    _require_model()
+    return {"status": "ok"}
 
 
-# TODO: Implement the POST /predict endpoint.
-# Accept a PredictRequest and return a PredictionResult.
-# Return HTTP 503 if the model is not loaded
-# Return HTTP 422 if the text is empty
 @app.post("/predict", response_model=PredictionResult)
 def predict(request: PredictRequest):
-    raise NotImplementedError
+    _require_model()
+    # Pydantic accepts "" for a str field, so the empty case never reaches FastAPI's
+    # automatic 422 machinery and must be raised by hand. .strip() also rejects
+    # whitespace-only input, which would otherwise yield a meaningless prediction.
+    if not request.text.strip():
+        raise HTTPException(status_code=422, detail="text must not be empty")
+    return run_predictions([request.text])[0]
 
 
-# TODO: Implement the POST /predict/batch endpoint.
-# Accept a PredictBatchRequest and return a list of PredictionResult.
-# Return HTTP 503 if the model is not loaded
-# and HTTP 422 if the texts list is empty.
 @app.post("/predict/batch", response_model=list[PredictionResult])
 def predict_batch(request: PredictBatchRequest):
-    raise NotImplementedError
+    _require_model()
+    # Likewise, list[str] accepts [] — Pydantic will not reject it for us.
+    if not request.texts:
+        raise HTTPException(status_code=422, detail="texts must not be empty")
+    if any(not t.strip() for t in request.texts):
+        raise HTTPException(
+            status_code=422, detail="texts must not contain empty strings"
+        )
+    return run_predictions(request.texts)
 
 
 if __name__ == "__main__":
