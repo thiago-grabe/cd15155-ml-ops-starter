@@ -35,8 +35,10 @@ jobs:
           python-version: "3.12"
       - run: pip install ruff==0.16.4
       - run: ruff check app/ scripts/ tests/ monitoring/
-      - run: ruff format --check app/ scripts/ tests/ monitoring/
-        continue-on-error: true   # advisory: formatting is not yet enforced
+      # No `ruff format --check` here on purpose. As an advisory step it annotated
+      # every run red while still passing, which is worse than useless. Enforcing it
+      # would mean reformatting starter-provided files for no functional gain. If
+      # formatting is ever adopted, make it a real gate with the tree already formatted.
 
   config-validation:
     name: Config validation
@@ -233,17 +235,27 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, config-validation, test, deepchecks, docker-build]
     if: always()
+    defaults:
+      run:
+        # This job checks nothing out, so it must NOT inherit the workflow-level
+        # working-directory: starter -- bash cannot start in a directory that does
+        # not exist, and the job fails before running a single line.
+        working-directory: .
     steps:
       - name: Fail if any gate failed
+        # Passed via env rather than interpolated into the script: toJSON emits
+        # multi-line JSON with quotes, which is fragile inside a shell string.
+        env:
+          RESULTS: ${{ toJSON(needs) }}
         run: |
-          RESULTS='${{ toJSON(needs) }}'
-          echo "$RESULTS"
-          echo "$RESULTS" | python3 -c "
-          import json,sys
-          d=json.load(sys.stdin)
-          bad=[k for k,v in d.items() if v['result'] not in ('success','skipped')]
-          for k,v in d.items(): print(f\"  {v['result']:>10}  {k}\")
-          if bad:
-              print('\nFAILED:', ', '.join(bad)); sys.exit(1)
-          print('\nAll pre-merge gates passed.')
-          "
+          python3 - <<'PY'
+          import json, os, sys
+          results = json.loads(os.environ["RESULTS"])
+          for name, job in results.items():
+              print(f"  {job['result']:>10}  {name}")
+          failed = [n for n, j in results.items() if j["result"] not in ("success", "skipped")]
+          if failed:
+              print("\nFAILED: " + ", ".join(failed))
+              sys.exit(1)
+          print("\nAll pre-merge gates passed.")
+          PY
