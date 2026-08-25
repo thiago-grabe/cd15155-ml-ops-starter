@@ -1,0 +1,37 @@
+# MLflow tracking server + Model Registry + artifact proxy.
+# Built rather than pulled so the server version-matches the 2.16.2 client exactly and
+# an arm64 image is guaranteed. No torch/transformers needed: model logging is client-side.
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+
+# --- Corporate TLS-inspection trust (local builds only) ----------------------
+# This directory is empty in git. On networks running a TLS-inspecting proxy
+# (Zscaler here), dropping the proxy root CA into docker/certs/*.crt makes pip and
+# huggingface_hub able to verify download.pytorch.org / huggingface.co, which are
+# re-signed in transit. On GitHub Actions the directory is empty and this is a no-op.
+# See docker/certs/README.md.
+COPY docker/certs/ /usr/local/share/ca-certificates/
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && update-ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+ENV PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+RUN pip install --no-cache-dir mlflow==2.16.2 boto3==1.34.101
+
+EXPOSE 5000
+
+# sqlite:////mlruns/mlflow.db -- FOUR slashes: three for the sqlite scheme plus the
+# leading / of the absolute path /mlruns/mlflow.db.
+# (MLflow 2.16.2 does support a plain file-based registry, so this is a deliberate
+# choice for transactional semantics and safe concurrent access, not a requirement.)
+CMD ["mlflow", "server", \
+     "--host", "0.0.0.0", \
+     "--port", "5000", \
+     "--backend-store-uri", "sqlite:////mlruns/mlflow.db", \
+     "--artifacts-destination", "/mlartifacts", \
+     "--serve-artifacts"]

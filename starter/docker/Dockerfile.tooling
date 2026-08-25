@@ -1,0 +1,58 @@
+# Toolchain image: runs dvc, evaluate/promote, deepchecks, pytest, locust and the
+# monitoring stream. Everything heavy lives here so nothing has to be installed on the host.
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HOME=/opt/hf \
+    NLTK_DATA=/opt/nltk_data \
+    PYTHONPATH=/workspace/starter
+
+# git is required by DVC. build-essential + pybind11 are required to compile fasttext
+# from sdist: PyPI ships no cp312 wheel, but deepchecks calls get_fasttext_model()
+# unconditionally, so it must be installed.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git curl ca-certificates build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Corporate TLS-inspection trust (local builds only) ----------------------
+# Empty in git / on CI. See docker/certs/README.md.
+COPY docker/certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+ENV PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+RUN pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cpu \
+      torch==2.8.0
+
+COPY requirements.txt .
+# pybind11 first: fasttext's sdist build needs it present at build time.
+RUN pip install --no-cache-dir pybind11 \
+ && pip install --no-cache-dir -r requirements.txt
+
+# Pre-fetch NLP corpora so the drift job is deterministic and never reaches for the
+# network mid-run. punkt_tab is the subtle one: deepchecks 0.19.1 probes for it but only
+# requires nltk>=3.8.1, while punkt_tab first ships in nltk 3.9.1.
+RUN python -m nltk.downloader -d /opt/nltk_data \
+      punkt punkt_tab averaged_perceptron_tagger averaged_perceptron_tagger_eng \
+ && python -m textblob.download_corpora || true
+
+# Bake deepchecks' fasttext language-ID model (lid.176) into the image.
+# calculate_builtin_properties() fetches it from dl.fbaipublicfiles.com on first use;
+# doing that at RUN time made the drift gate flaky (read timeouts) because each
+# `docker compose run --rm` starts from a fresh container with an empty model cache.
+RUN python -c "from deepchecks.nlp.utils.text_properties_models import get_fasttext_model; \
+get_fasttext_model(); print('fasttext lid model cached')" 
+
+# DVC operates on a bind-mounted repo owned by a different uid; without this git
+# refuses with "detected dubious ownership".
+RUN git config --global --add safe.directory /workspace \
+ && git config --global --add safe.directory '*'
+
+WORKDIR /workspace/starter
+
+CMD ["bash"]

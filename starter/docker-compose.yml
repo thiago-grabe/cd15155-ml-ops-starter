@@ -1,24 +1,128 @@
-# TODO (Task 4)
-# Define a docker-compose.yml that runs the FastAPI service with:
-# 1. Build section that defines how to create the Docker image for the service
-# 2. Port mapping 8000:8000
-# 3. Pass environment variables using the .env file
-# 4. Volume mounts for mlruns/ and mlartifacts/ so the API can reach the registered model
-# 5. A healthcheck on GET /health
-# 6. extra_hosts mapping so the container can reach the MLflow server running on the host machine
-#    (required on Linux where host.docker.internal is not resolved automatically)
-# Documentation: https://docs.docker.com/compose/compose-file/
+# Full local MLOps stack. Host ports all carry the "67" suffix to avoid collisions;
+# CONTAINER ports stay canonical (8000/5000/9090/3000) because prometheus.yml and the
+# ECS task definition both target the container port.
+#
+#   api         http://localhost:8067
+#   mlflow      http://localhost:5067      (host 5000 is taken by macOS AirPlay Receiver)
+#   prometheus  http://localhost:9067
+#   grafana     http://localhost:3067      (admin / admin)
+#   locust      http://localhost:8967      (tooling profile)
 
 services:
 
-  api:
-    build: 
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: finbert-mlflow
     ports:
-
-    env_file:
-      
+      - "5067:5000"
     volumes:
-
-    extra_hosts:
-      
+      - ./mlruns:/mlruns
+      - ./mlartifacts:/mlartifacts
     healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5).status==200 else 1)"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finbert-api
+    # Rubric default mapping is "8000:8000"; remapped to 8067 on the host to avoid
+    # collisions with other local apps. The container still listens on 8000.
+    # - "8000:8000"
+    ports:
+      - "8067:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./mlruns:/mlruns
+      - ./mlartifacts:/mlartifacts
+      - hf-cache:/opt/hf
+    extra_hosts:
+      # Lets the container reach an MLflow server running on the HOST machine
+      # (http://host.docker.internal:5067). Required on Linux, where Docker does not
+      # resolve host.docker.internal automatically.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # Cold model load can exceed 90s; too short a start period marks the container
+      # unhealthy and blocks anything waiting on service_healthy.
+      start_period: 180s
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: finbert-prometheus
+    ports:
+      - "9067:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: finbert-grafana
+    ports:
+      - "3067:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  tooling:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tooling
+    # `profiles` keeps this out of a plain `docker compose up`; invoke it explicitly:
+    #   docker compose --profile tools run --rm tooling <command>
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      # Reach the API by service DNS on its CONTAINER port.
+      API_URL: http://api:8000
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      # The git root is the PARENT of starter/, and DVC needs the git repo, so the whole
+      # repository is mounted rather than just this directory.
+      - ../:/workspace
+      - ./mlruns:/mlruns
+      - ./mlartifacts:/mlartifacts
+      - hf-cache:/opt/hf
+    working_dir: /workspace/starter
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8967:8089"
+
+volumes:
+  # Shared so `smoke_test.py` (run in tooling) patches the very same cached config.json
+  # that the api container loads -- no 440 MB re-download.
+  hf-cache:
+  prom-data:
+  grafana-data:
