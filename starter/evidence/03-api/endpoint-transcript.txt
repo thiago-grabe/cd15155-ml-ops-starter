@@ -1,0 +1,28 @@
+### GET /health
+HTTP/1.1 200 OK
+date: Tue, 25 Aug 2026 14:22:24 GMT
+server: uvicorn
+content-length: 15
+content-type: application/json
+
+{"status":"ok"}
+### POST /predict
+HTTP/1.1 200 OK
+date: Tue, 25 Aug 2026 14:22:24 GMT
+server: uvicorn
+content-length: 146
+content-type: application/json
+
+{"text":"The company reported record profits and raised its dividend.","sentiment":"positive","confidence":0.8493121862411499,"latency_ms":161.25}
+### POST /predict/batch (3 texts)
+HTTP/1.1 200 OK
+date: Tue, 25 Aug 2026 14:22:24 GMT
+server: uvicorn
+content-length: 305
+content-type: application/json
+
+[{"text":"Record profits.","sentiment":"positive","confidence":0.6138776540756226,"latency_ms":62.46},{"text":"Bankruptcy filing.","sentiment":"positive","confidence":0.4415126144886017,"latency_ms":62.46},{"text":"Flat trading.","sentiment":"positive","confidence":0.4352432191371918,"latency_ms":62.46}]
+### POST /predict  (empty text -> expect 422)
+status=422
+### POST /predict/batch (empty list -> expect 422)
+status=422

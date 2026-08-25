@@ -1,0 +1,10 @@
+triggers: {'push': {'branches': ['main']}, 'workflow_dispatch': None}
+push to main: True
+job test: needs=lint -> OK
+job deepchecks: needs=lint -> OK
+job build: needs=['test', 'deepchecks'] -> OK
+job deploy: needs=build -> OK
+job build: uses AWS creds  -> True
+job deploy: uses AWS creds  -> True
+deploy uses ecs-deploy-task-definition: True
+VERDICT: PASS

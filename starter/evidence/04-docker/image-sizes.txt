@@ -1,0 +1,5 @@
+starter-tooling:latest  4.06GB
+402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:0cca33f-20260825110531  957MB
+402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest  957MB
+starter-api:latest  3.07GB
+starter-mlflow:latest  1.31GB

@@ -1,0 +1,4 @@
+OK    job_name == "finbert-api"
+OK    scrape_interval == 15s
+OK    target api:8000
+VERDICT: PASS

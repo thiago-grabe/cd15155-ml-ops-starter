@@ -1,0 +1,14 @@
+# Prometheus scrape configuration for the FinBERT sentiment API.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "finbert-api"
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      # Compose service DNS + the CONTAINER port (8000), not the published host port.
+      - targets: ["api:8000"]
+        labels:
+          service: finbert-api

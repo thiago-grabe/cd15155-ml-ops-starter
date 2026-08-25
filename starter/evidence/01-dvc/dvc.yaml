@@ -1,0 +1,30 @@
+# Data preparation pipeline.
+#   prepare -> downloads the financial headlines dataset from HuggingFace and splits it
+#   clean   -> normalises the raw Bluesky stream into FinBERT-ready text
+#
+# `prepare` intentionally declares no data dependency: its source is the HuggingFace Hub
+# (keyed by HF_DATASET_ID in .env), not a file in this repo.
+stages:
+  prepare:
+    cmd: python scripts/load_data.py
+    deps:
+      - scripts/load_data.py
+    params:
+      - prepare.data_dir
+      - prepare.test_size
+      - prepare.random_seed
+    outs:
+      - data/train.csv
+      - data/test.csv
+
+  clean:
+    cmd: python scripts/clean_data.py
+    deps:
+      - scripts/clean_data.py
+      - data/raw_stream.csv
+    params:
+      - clean.data_dir
+      - clean.min_words
+      - clean.max_words
+    outs:
+      - data/stream.csv

@@ -1,0 +1,52 @@
+# Rubric Evidence Pack
+
+Generated: 2026-08-25T14:23:34.993642+00:00
+
+**PASS 34 · FAIL 0 · SKIP 1**
+
+Every row below is produced by `./evidence/collect_evidence.sh`. Artifacts are
+machine-generated; nothing here is hand-written after the fact.
+
+Re-run with the stack up (`docker compose up -d`) to refresh.
+
+| # | Rubric requirement | Verdict | Evidence | Detail |
+|---|---|---|---|---|
+| 1.1 | dvc.yaml defines stages named prepare and clean | **PASS** | [`01-dvc/dvc.yaml`](01-dvc/dvc.yaml) | stages=prepare,clean |
+| 1.2 | prepare/clean declare required cmd, deps, params, outs | **PASS** | [`01-dvc/stage-contract.txt`](01-dvc/stage-contract.txt) | all fields present |
+| 1.3 | dvc.lock committed alongside dvc.yaml | **PASS** | [`01-dvc/dvc.lock`](01-dvc/dvc.lock) | tracked by git |
+| 1.4 | Datasets generated; stream.csv >= deepchecks min_samples(100) | **PASS** | [`01-dvc/dataset-rows.txt`](01-dvc/dataset-rows.txt) | stream.csv=444 rows |
+| 2.1 | evaluate.py sets URI+experiment, logs params/metrics, registers model | **PASS** | [`02-mlflow/evaluate.py`](02-mlflow/evaluate.py) | all 6 calls present |
+| 2.2 | MLflow run logs all four evaluation metrics | **PASS** | [`02-mlflow/runs.json`](02-mlflow/runs.json) | accuracy,f1_weighted,precision_weighted,recall_weighted |
+| 2.3 | Model registered in the MLflow Model Registry | **PASS** | [`02-mlflow/registered-model.json`](02-mlflow/registered-model.json) | name=finbert |
+| 2.4 | production alias assigned to a registered version | **PASS** | [`02-mlflow/production-alias.json`](02-mlflow/production-alias.json) | version=1 |
+| 2.5 | promote.py reads threshold, sets alias, prints message on failure | **PASS** | [`02-mlflow/promote.py`](02-mlflow/promote.py) | all three behaviours present |
+| 3.0 | run_prediction helper present in app/main.py | **PASS** | [`03-api/main.py`](03-api/main.py) | 134:def run_predictions(texts: list[str]) -> list[PredictionResult]: 189:def run_prediction(text: str) -> tuple[list[PredictionResult], float]:  |
+| 3.1 | GET /health returns 200 {"status":"ok"} | **PASS** | [`03-api/endpoint-transcript.txt`](03-api/endpoint-transcript.txt) | status=200 |
+| 3.2 | POST /predict returns text, sentiment, confidence, latency_ms | **PASS** | [`03-api/predict-response.json`](03-api/predict-response.json) | keys=confidence,latency_ms,sentiment,text |
+| 3.3 | POST /predict/batch returns one result per input | **PASS** | [`03-api/predict-batch-response.json`](03-api/predict-batch-response.json) | 3 in -> 3 out |
+| 3.4 | 422 for empty text and empty texts list | **PASS** | [`03-api/endpoint-transcript.txt`](03-api/endpoint-transcript.txt) | predict=422 batch=422 |
+| 3.5 | Integration tests pass (>=3 covering the named cases) | **PASS** | [`03-api/pytest.txt`](03-api/pytest.txt) | 10 tests passed |
+| 3.6 | Locust HttpUser: 3 weighted tasks (3/1/1) + wait_time | **PASS** | [`03-api/locustfile.py`](03-api/locustfile.py) | tasks=3 wait_time=yes weight3=yes |
+| 4.1 | Dockerfile: slim base, reqs install, COPY app/, EXPOSE 8000, CMD | **PASS** | [`04-docker/Dockerfile`](04-docker/Dockerfile) | all five anchors present |
+| 4.2 | compose api: build, ports, env_file, mlruns+mlartifacts, extra_hosts, healthcheck | **PASS** | [`04-docker/compose-contract.txt`](04-docker/compose-contract.txt) | all six keys present |
+| 4.3 | api container reports healthy | **PASS** | [`04-docker/compose-ps.json`](04-docker/compose-ps.json) | health=healthy |
+| 4.4 | Slim CPU-only image size recorded (stand-out) | **PASS** | [`04-docker/image-sizes.txt`](04-docker/image-sizes.txt) | starter-tooling:latest  4.06GB |
+| 5.1 | run_deepchecks: 2 TextData, property+prediction drift, non-zero exit | **PASS** | [`05-cicd/run_deepchecks.py`](05-cicd/run_deepchecks.py) | TextData=2 prop=yes pred=yes exit=yes |
+| 5.2 | Drift gate executes and passes on current data | **PASS** | [`05-cicd/deepchecks-run.txt`](05-cicd/deepchecks-run.txt) | exit=0 |
+| 5.3 | ci-cd.yml on push:main with test/deepchecks/build/deploy job graph | **PASS** | [`05-cicd/workflow-contract.txt`](05-cicd/workflow-contract.txt) | job graph correct |
+| 5.4 | GitHub actually registers the workflow | **SKIP** | [`05-cicd/gh-workflow-list.txt`](05-cicd/gh-workflow-list.txt) | not registered until pushed to the default branch |
+| 5.5 | Image present in ECR | **PASS** | [`05-cicd/ecr-images.json`](05-cicd/ecr-images.json) | 4 images |
+| 5.6 | ECS service running the deployed task | **PASS** | [`05-cicd/ecs-service.json`](05-cicd/ecs-service.json) | runningCount=1 |
+| 6.1 | Counter(sentiment) + Histogram + error Counter + /metrics exposition | **PASS** | [`03-api/main.py`](03-api/main.py) | Counters=2 Histogram=yes generate_latest=yes |
+| 6.2 | /metrics exposes all three instrument families | **PASS** | [`06-monitoring/metrics.txt`](06-monitoring/metrics.txt) | requests=3 latency_buckets=12 errors=1 |
+| 6.3 | Structured JSON logs with timestamp/level/message | **PASS** | [`06-monitoring/api-logs.txt`](06-monitoring/api-logs.txt) | 474/474 lines valid |
+| 6.4 | prometheus.yml: job finbert-api, 15s, target api:8000 | **PASS** | [`06-monitoring/prometheus-contract.txt`](06-monitoring/prometheus-contract.txt) | all three present |
+| 6.5 | Prometheus is actually scraping the API | **PASS** | [`06-monitoring/prometheus-targets.json`](06-monitoring/prometheus-targets.json) | target health=up |
+| 6.6 | stream.py logs 5 window metrics to MLflow with step index | **PASS** | [`06-monitoring/stream.py`](06-monitoring/stream.py) | log_window=3 step=yes metrics=5 |
+| 6.7 | Grafana dashboard JSON committed (stand-out) | **PASS** | [`06-monitoring/grafana-dashboard.json`](06-monitoring/grafana-dashboard.json) | 6 panels |
+| 6.8 | Deploy approval gate via GitHub environment (stand-out) | **PASS** | [`05-cicd/ci-cd.yml`](05-cicd/ci-cd.yml) | environment: production on deploy job |
+| 6.9 | Model rollback workflow + script (stand-out) | **PASS** | [`05-cicd/rollback.yml`](05-cicd/rollback.yml) | workflow_dispatch + scripts/rollback.py |
+
+## Not verified in this run
+
+- **5.4 GitHub actually registers the workflow** — not registered until pushed to the default branch

@@ -1,0 +1,10 @@
+OK    build directive
+OK    port mapping to container 8000
+OK    env_file .env
+OK    volume mount mlruns/
+OK    volume mount mlartifacts/
+OK    extra_hosts host-gateway
+OK    healthcheck on GET /health
+VERDICT: PASS
+
+ports: ['8067:8000']
