@@ -1,0 +1,5 @@
+{
+  "credentials": "valid",
+  "account": "***1984",
+  "arn": "arn:aws:sts::<redacted>:assumed-role/<redacted>"
+}

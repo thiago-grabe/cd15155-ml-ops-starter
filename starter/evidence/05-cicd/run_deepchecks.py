@@ -12,10 +12,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import pandas as pd
 import yaml
-from app.utils import load_classifier
 from deepchecks.nlp import TextData
 from deepchecks.nlp.checks import PredictionDrift, PropertyDrift
 from dotenv import load_dotenv
+
+from app.utils import load_classifier
 
 load_dotenv()
 

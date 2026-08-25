@@ -34,3 +34,6 @@ mlartifacts/
 
 # Corporate TLS-inspection CA (local build only) — see docker/certs/README.md
 docker/certs/*.crt
+
+# Never commit raw AWS caller identity (account id / role ARN) into the evidence pack
+evidence/**/aws-identity-raw.json

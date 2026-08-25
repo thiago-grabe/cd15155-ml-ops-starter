@@ -1,6 +1,6 @@
 # HELP python_gc_objects_collected_total Objects collected during gc
 # TYPE python_gc_objects_collected_total counter
-python_gc_objects_collected_total{generation="0"} 12418.0
+python_gc_objects_collected_total{generation="0"} 11222.0
 python_gc_objects_collected_total{generation="1"} 3943.0
 python_gc_objects_collected_total{generation="2"} 2479.0
 # HELP python_gc_objects_uncollectable_total Uncollectable objects found during GC
@@ -10,7 +10,7 @@ python_gc_objects_uncollectable_total{generation="1"} 0.0
 python_gc_objects_uncollectable_total{generation="2"} 0.0
 # HELP python_gc_collections_total Number of times this generation was collected
 # TYPE python_gc_collections_total counter
-python_gc_collections_total{generation="0"} 900.0
+python_gc_collections_total{generation="0"} 893.0
 python_gc_collections_total{generation="1"} 81.0
 python_gc_collections_total{generation="2"} 6.0
 # HELP python_info Python platform information
@@ -18,54 +18,50 @@ python_gc_collections_total{generation="2"} 6.0
 python_info{implementation="CPython",major="3",minor="12",patchlevel="14",version="3.12.14"} 1.0
 # HELP process_virtual_memory_bytes Virtual memory size in bytes.
 # TYPE process_virtual_memory_bytes gauge
-process_virtual_memory_bytes 5.023072256e+09
+process_virtual_memory_bytes 4.184035328e+09
 # HELP process_resident_memory_bytes Resident memory size in bytes.
 # TYPE process_resident_memory_bytes gauge
-process_resident_memory_bytes 8.37312512e+08
+process_resident_memory_bytes 9.0589184e+08
 # HELP process_start_time_seconds Start time of the process since unix epoch in seconds.
 # TYPE process_start_time_seconds gauge
-process_start_time_seconds 1.78766598566e+09
+process_start_time_seconds 1.78766885309e+09
 # HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.
 # TYPE process_cpu_seconds_total counter
-process_cpu_seconds_total 348.05
+process_cpu_seconds_total 19.05
 # HELP process_open_fds Number of open file descriptors.
 # TYPE process_open_fds gauge
-process_open_fds 26.0
+process_open_fds 27.0
 # HELP process_max_fds Maximum number of open file descriptors.
 # TYPE process_max_fds gauge
 process_max_fds 1.048576e+06
 # HELP prediction_requests_total Total number of prediction requests, labelled by predicted sentiment.
 # TYPE prediction_requests_total counter
-prediction_requests_total{sentiment="positive"} 370.0
-prediction_requests_total{sentiment="negative"} 77.0
-prediction_requests_total{sentiment="neutral"} 25.0
+prediction_requests_total{sentiment="positive"} 9.0
 # HELP prediction_requests_created Total number of prediction requests, labelled by predicted sentiment.
 # TYPE prediction_requests_created gauge
-prediction_requests_created{sentiment="positive"} 1.7876660125234013e+09
-prediction_requests_created{sentiment="negative"} 1.7876660127466471e+09
-prediction_requests_created{sentiment="neutral"} 1.7876660127466884e+09
+prediction_requests_created{sentiment="positive"} 1.7876689420424042e+09
 # HELP prediction_latency_ms Prediction latency in milliseconds.
 # TYPE prediction_latency_ms histogram
 prediction_latency_ms_bucket{le="5.0"} 0.0
 prediction_latency_ms_bucket{le="10.0"} 0.0
 prediction_latency_ms_bucket{le="25.0"} 0.0
-prediction_latency_ms_bucket{le="50.0"} 2.0
-prediction_latency_ms_bucket{le="100.0"} 215.0
-prediction_latency_ms_bucket{le="250.0"} 469.0
-prediction_latency_ms_bucket{le="500.0"} 471.0
-prediction_latency_ms_bucket{le="1000.0"} 472.0
-prediction_latency_ms_bucket{le="2500.0"} 472.0
-prediction_latency_ms_bucket{le="5000.0"} 472.0
-prediction_latency_ms_bucket{le="10000.0"} 472.0
-prediction_latency_ms_bucket{le="+Inf"} 472.0
-prediction_latency_ms_count 472.0
-prediction_latency_ms_sum 51513.55000000003
+prediction_latency_ms_bucket{le="50.0"} 1.0
+prediction_latency_ms_bucket{le="100.0"} 7.0
+prediction_latency_ms_bucket{le="250.0"} 8.0
+prediction_latency_ms_bucket{le="500.0"} 8.0
+prediction_latency_ms_bucket{le="1000.0"} 9.0
+prediction_latency_ms_bucket{le="2500.0"} 9.0
+prediction_latency_ms_bucket{le="5000.0"} 9.0
+prediction_latency_ms_bucket{le="10000.0"} 9.0
+prediction_latency_ms_bucket{le="+Inf"} 9.0
+prediction_latency_ms_count 9.0
+prediction_latency_ms_sum 1529.1600000000003
 # HELP prediction_latency_ms_created Prediction latency in milliseconds.
 # TYPE prediction_latency_ms_created gauge
-prediction_latency_ms_created 1.787665989231168e+09
+prediction_latency_ms_created 1.7876688561057372e+09
 # HELP prediction_errors_total Total number of prediction errors.
 # TYPE prediction_errors_total counter
 prediction_errors_total 0.0
 # HELP prediction_errors_created Total number of prediction errors.
 # TYPE prediction_errors_created gauge
-prediction_errors_created 1.7876659892312045e+09
+prediction_errors_created 1.7876688561057646e+09

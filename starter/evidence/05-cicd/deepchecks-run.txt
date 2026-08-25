@@ -1,19 +1,19 @@
- Container starter-tooling-run-a138c397ad85 Creating 
- Container starter-tooling-run-a138c397ad85 Created 
+ Container starter-tooling-run-efdee1590cc7 Creating 
+ Container starter-tooling-run-efdee1590cc7 Created 
 Loading production model...
 Loading model from MLflow: models:/finbert@production
-Downloading artifacts:   0%|          | 0/15 [00:00<?, ?it/s]Downloading artifacts:   7%|▋         | 1/15 [00:00<00:00, 14169.95it/s]Downloading artifacts:  13%|█▎        | 2/15 [00:00<00:00, 13005.59it/s]Downloading artifacts:  20%|██        | 3/15 [00:00<00:00, 13134.56it/s]Downloading artifacts:  27%|██▋       | 4/15 [00:00<00:00, 13729.31it/s]Downloading artifacts:  33%|███▎      | 5/15 [00:00<00:00, 3181.84it/s] Downloading artifacts:  40%|████      | 6/15 [00:00<00:00, 2814.65it/s]Downloading artifacts:  47%|████▋     | 7/15 [00:00<00:00, 348.66it/s] Downloading artifacts:  53%|█████▎    | 8/15 [00:00<00:00, 383.99it/s]Downloading artifacts:  60%|██████    | 9/15 [00:00<00:00, 399.72it/s]Downloading artifacts:  67%|██████▋   | 10/15 [00:00<00:00, 322.74it/s]Downloading artifacts:  73%|███████▎  | 11/15 [00:00<00:00, 293.23it/s]Downloading artifacts:  80%|████████  | 12/15 [00:00<00:00, 297.38it/s]Downloading artifacts:  87%|████████▋ | 13/15 [00:00<00:00, 101.07it/s]Downloading artifacts:  87%|████████▋ | 13/15 [00:00<00:00, 101.07it/s]Downloading artifacts:  93%|█████████▎| 14/15 [00:00<00:00, 101.07it/s]Downloading artifacts: 100%|██████████| 15/15 [00:05<00:00, 101.07it/s]Downloading artifacts: 100%|██████████| 15/15 [00:05<00:00,  2.65it/s] 
-2026/08/25 14:22:52 INFO mlflow.transformers: 'models:/finbert@production' resolved as 'mlflow-artifacts:/1/c4cbbaa0dc4e42febc3d8def7c34c355/artifacts/model'
-Downloading artifacts:   0%|          | 0/1 [00:00<?, ?it/s]Downloading artifacts: 100%|██████████| 1/1 [00:00<00:00, 287.03it/s]Downloading artifacts: 100%|██████████| 1/1 [00:00<00:00, 280.80it/s]
-2026/08/25 14:22:52 WARNING mlflow.transformers.model_io: Could not specify device parameter for this pipeline type.Falling back to loading the model with the default device.
+Downloading artifacts:   0%|          | 0/15 [00:00<?, ?it/s]
+2026/08/25 15:00:00 INFO mlflow.transformers: 'models:/finbert@production' resolved as 'mlflow-artifacts:/1/c4cbbaa0dc4e42febc3d8def7c34c355/artifacts/model'
+Downloading artifacts:   0%|          | 0/1 [00:00<?, ?it/s]
+2026/08/25 15:00:00 WARNING mlflow.transformers.model_io: Could not specify device parameter for this pipeline type.Falling back to loading the model with the default device.
 Reference (test.csv):  1629 samples
 Current   (stream.csv): 444 samples
 
 Calculating 'Sentiment' property...
 /usr/local/lib/python3.12/site-packages/deepchecks/nlp/utils/text_properties.py:876: UserWarning: Onnx models require the optimum[onnxruntime-gpu] library to be installed. Calculating using the default models.
   warnings.warn('Onnx models require the optimum[onnxruntime-gpu] library to be installed. '
-  0%|          | 0/102 [00:00<?, ?it/s] 56%|█████▌    | 57/102 [00:00<00:00, 566.63it/s]100%|██████████| 102/102 [00:00<00:00, 623.92it/s]
-  0%|          | 0/28 [00:00<?, ?it/s]100%|██████████| 28/28 [00:00<00:00, 427.82it/s]
+  0%|          | 0/102 [00:00<?, ?it/s] 55%|█████▍    | 56/102 [00:00<00:00, 558.36it/s]100%|██████████| 102/102 [00:00<00:00, 620.90it/s]
+  0%|          | 0/28 [00:00<?, ?it/s]100%|██████████| 28/28 [00:00<00:00, 404.34it/s]
 
 Sentiment property drift: 0.2913 (max allowed 0.5)
 

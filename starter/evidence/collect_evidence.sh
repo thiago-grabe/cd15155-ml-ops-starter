@@ -373,7 +373,17 @@ fi
 
 if [ "${SKIP_AWS:-0}" = "1" ]; then
   for i in 5.5 5.6; do record $i "AWS resources / deployment" SKIP "-" "SKIP_AWS=1"; done
-elif aws sts get-caller-identity > "$EV/05-cicd/aws-identity.json" 2>&1; then
+elif aws sts get-caller-identity > /tmp/aws-identity.json 2>&1; then
+  # Record only that credentials resolved. The raw response carries the account id,
+  # role ARN and user id, which do not belong in a committed artifact.
+  python3 -c "
+import json
+d=json.load(open('/tmp/aws-identity.json'))
+acct=d.get('Account','')
+print(json.dumps({'credentials':'valid',
+                  'account':'***'+acct[-4:] if acct else '',
+                  'arn':d.get('Arn','').split('/')[0]+'/<redacted>'}, indent=2))
+" > "$EV/05-cicd/aws-identity.json" 2>/dev/null || echo '{"credentials":"valid"}' > "$EV/05-cicd/aws-identity.json"
   aws ecr list-images --repository-name finbert-api > "$EV/05-cicd/ecr-images.json" 2>&1 \
     && record 5.5 "Image present in ECR" PASS "05-cicd/ecr-images.json" "$(python3 -c "import json;print(len(json.load(open('$EV/05-cicd/ecr-images.json'))['imageIds']),'images')" 2>/dev/null || echo 'see file')" \
     || record 5.5 "Image present in ECR" SKIP "05-cicd/ecr-images.json" "repo absent — run scripts/aws_bootstrap.sh"
