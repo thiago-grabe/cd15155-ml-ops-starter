@@ -106,12 +106,33 @@ own layer, and uses `requirements-api.txt` rather than the full toolchain.
 `--index-url` **replaces** PyPI rather than adding to it (that index 404s for
 fastapi/pandas/transformers), so the two installs cannot be merged into one command.
 
-| Build | Approx. size | Why |
-|---|---|---|
-| Default PyPI torch | ~6–7 GB | 888 MB torch wheel + ~15 `nvidia-*`/`triton` CUDA packages |
-| CPU-only wheel + `requirements-api.txt` | ~1.2 GB | 184 MB torch wheel, no CUDA, no dvc/deepchecks/locust/pytest |
+### Measured
 
-Measured values for this build are in `evidence/04-docker/image-sizes.txt`.
+| Artifact | Size | How measured |
+|---|---|---|
+| `starter-api:latest`, local arm64, model baked in | **3.07 GB** uncompressed | `docker images` |
+| `finbert-api:latest` in ECR, linux/amd64, model baked in | **0.96 GB** compressed | `aws ecr describe-images --query imageSizeInBytes` |
+
+### The dependency delta these numbers come from
+
+| Package set | Size | How measured |
+|---|---|---|
+| `torch==2.8.0+cpu` (cp312, manylinux x86_64) from the PyTorch CPU index | **183.9 MB** | HTTP `Content-Length` |
+| `torch==2.8.0` (cp312, manylinux x86_64) from default PyPI | **887.9 MB** | PyPI JSON API |
+| Extra CUDA/triton packages the PyPI wheel requires | **15** (`nvidia-cublas-cu12`, `nvidia-cudnn-cu12`, `nvidia-cufft-cu12`, …) | PyPI `requires_dist` |
+
+So the CPU wheel alone saves ~704 MB, before counting the 15 CUDA packages it avoids
+pulling — those dominate, and are why the naive build lands in the multi-GB range.
+
+> **Honest caveat:** a full "before" image was **not** built, so there is no measured
+> baseline image size to compare against. Building one requires an emulated linux/amd64
+> build on this Apple Silicon host, which was attempted and abandoned as too slow. The
+> package sizes above are measured; any whole-image "before" figure would be an estimate,
+> so none is quoted. Note also that on linux/**arm64** there are no CUDA wheels at all, so
+> this optimisation only changes the amd64 image that CI builds and ECS runs.
+
+The other half of the saving is `requirements-api.txt`, which drops dvc, deepchecks,
+datasets, locust, pytest and category-encoders from the serving image entirely.
 
 ## Troubleshooting
 

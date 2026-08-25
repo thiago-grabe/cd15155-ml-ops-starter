@@ -221,7 +221,8 @@ def predict(request: PredictRequest):
     # whitespace-only input, which would otherwise yield a meaningless prediction.
     if not request.text.strip():
         raise HTTPException(status_code=422, detail="text must not be empty")
-    return run_predictions([request.text])[0]
+    predictions, _latency_ms = run_prediction(request.text)
+    return predictions[0]
 
 
 @app.post("/predict/batch", response_model=list[PredictionResult])
