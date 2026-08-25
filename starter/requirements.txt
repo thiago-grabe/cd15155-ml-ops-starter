@@ -1,11 +1,34 @@
+# Full toolchain: API + DVC + MLflow + Deepchecks + tests.
+# Used by the `tooling` container and by CI. The API image uses requirements-api.txt.
+#
+# PIN RATIONALE (do not relax without re-verifying):
+#   transformers <4.45  -> unconstrained resolves to 5.x, which breaks mlflow 2.16.2's
+#                          `mlflow.transformers` flavor (Task 2 registration fails).
+#   torch ==2.8.0       -> matches the CPU wheel installed from download.pytorch.org.
+#   torchvision REMOVED -> nothing imports it, and on linux/arm64 the +cpu cp312 wheels
+#                          start at 0.25.0 (needs torch 2.10), so it cannot co-resolve.
+#   fasttext   ==0.9.3  -> REQUIRED, and there is no way around it: deepchecks 0.19.1's
+#                          calculate_builtin_properties() calls get_fasttext_model()
+#                          UNCONDITIONALLY (text_properties.py, before any property
+#                          filtering), so neither include_properties=["Sentiment"] nor
+#                          ignore_non_english_samples_for_english_properties=False avoids it.
+#                          PyPI has only one prebuilt wheel (cp39-macosx_14_0_arm64), but the
+#                          sdist compiles cleanly on py3.12 given a C++ toolchain --
+#                          docker/Dockerfile.tooling installs build-essential for exactly this.
+#                          Deliberately absent from requirements-api.txt: the serving path
+#                          never imports deepchecks.
+#   nltk >=3.9.1        -> deepchecks probes for the `punkt_tab` resource, which first
+#                          ships in 3.9.1, but deepchecks itself only requires >=3.8.1.
+
 # Core data
 pandas>=2.0.0
+numpy>=1.26,<2
 pyyaml>=6.0
 
 # Model
-transformers>=4.40.2
-torch>=2.4.0
-torchvision>=0.19.0
+transformers>=4.40.2,<4.45
+tokenizers>=0.19,<0.20
+torch==2.8.0
 datasets==2.19.1
 scikit-learn>=1.3.0,<1.4.0
 setuptools>=69.0,<71.0
@@ -35,5 +58,6 @@ locust==2.28.0
 
 # Model validation
 deepchecks[nlp]==0.19.1
+nltk>=3.9.1
 fasttext==0.9.3
 category-encoders==2.6.3
