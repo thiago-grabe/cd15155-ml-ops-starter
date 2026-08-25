@@ -1,0 +1,57 @@
+# Manual model rollback.
+#
+# Reverts the MLflow `production` alias to the previous registered version — the
+# remediation path when the Deepchecks drift gate fails on a newly promoted model.
+#
+# Triggered manually:   gh workflow run rollback.yml
+#              or via:  Actions -> Model rollback -> Run workflow
+#
+# REQUIREMENT: the runner must be able to reach the MLflow tracking server, so
+# MLFLOW_TRACKING_URI must point at a reachable deployment. A tracking server running
+# only in local docker-compose is NOT reachable from a GitHub-hosted runner; in that
+# case run the same script locally:
+#     docker compose --profile tools run --rm tooling python scripts/rollback.py
+
+name: Model rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to roll back to (blank = previous version)"
+        required: false
+        type: string
+      dry_run:
+        description: "Report the change without applying it"
+        required: false
+        type: boolean
+        default: true
+
+defaults:
+  run:
+    working-directory: starter
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment:
+      name: production      # same approval gate as deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MLflow client
+        run: pip install mlflow==2.16.2 python-dotenv==1.0.1
+
+      - name: Roll back the production alias
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MODEL_NAME: finbert
+        run: |
+          ARGS=""
+          [ -n "${{ inputs.version }}" ] && ARGS="$ARGS --to ${{ inputs.version }}"
+          [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
+          python scripts/rollback.py $ARGS

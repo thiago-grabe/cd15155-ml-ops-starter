@@ -1,0 +1,17 @@
+{
+  "model_version": {
+    "name": "finbert",
+    "version": "1",
+    "creation_timestamp": 1787665897862,
+    "last_updated_timestamp": 1787665897862,
+    "current_stage": "None",
+    "description": "",
+    "source": "mlflow-artifacts:/1/c4cbbaa0dc4e42febc3d8def7c34c355/artifacts/model",
+    "run_id": "c4cbbaa0dc4e42febc3d8def7c34c355",
+    "status": "READY",
+    "run_link": "",
+    "aliases": [
+      "production"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+ Container starter-tooling-run-a382a4cf138a Creating 
+ Container starter-tooling-run-a382a4cf138a Created 
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-8.2.0, pluggy-1.6.0 -- /usr/local/bin/python3.12
+cachedir: .pytest_cache
+rootdir: /workspace/starter
+plugins: anyio-4.14.2, hydra-core-1.3.5
+collecting ... collected 10 items
+
+tests/test_api.py::test_predict_returns_valid_response[The company reported record profits and raised its dividend.] PASSED [ 10%]
+tests/test_api.py::test_predict_returns_valid_response[The firm filed for bankruptcy after massive losses.] PASSED [ 20%]
+tests/test_api.py::test_predict_returns_valid_response[Stocks closed flat on Friday amid low trading volume.] PASSED [ 30%]
+tests/test_api.py::test_predict_batch PASSED                             [ 40%]
+tests/test_api.py::test_predict_batch_empty_list_returns_422 PASSED      [ 50%]
+tests/test_api.py::test_health_returns_ok PASSED                         [ 60%]
+tests/test_api.py::test_predict_empty_text_returns_422 PASSED            [ 70%]
+tests/test_api.py::test_predict_whitespace_only_text_returns_422 PASSED  [ 80%]
+tests/test_api.py::test_endpoints_return_503_when_model_unloaded PASSED  [ 90%]
+tests/test_api.py::test_metrics_endpoint_exposes_prometheus_metrics PASSED [100%]

@@ -1,0 +1,165 @@
+name: starter
+services:
+  api:
+    build:
+      context: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter
+      dockerfile: Dockerfile
+    container_name: finbert-api
+    depends_on:
+      mlflow:
+        condition: service_healthy
+        required: true
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      API_URL: http://api:8000
+      AWS_ACCOUNT_ID: "402398991984"
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: 402398991984.dkr.ecr.us-east-1.amazonaws.com
+      ECR_REPOSITORY: finbert-api
+      HF_DATASET_ID: baptle/financial_headlines_market_based
+      HF_MODEL_ID: baptle/FinBERT_market_based
+      MLFLOW_EXPERIMENT_NAME: finbert-evaluation
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_NAME: finbert
+      MODEL_SOURCE: mlflow
+      MODEL_STAGE: production
+    extra_hosts:
+      - host.docker.internal=host-gateway
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',
+          timeout=5).status==200 else 1)
+      timeout: 10s
+      interval: 30s
+      retries: 5
+      start_period: 3m0s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8067"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/mlruns
+        target: /mlruns
+        bind: {}
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/mlartifacts
+        target: /mlartifacts
+        bind: {}
+      - type: volume
+        source: hf-cache
+        target: /opt/hf
+        volume: {}
+  grafana:
+    container_name: finbert-grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+        required: true
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    image: grafana/grafana:11.2.0
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 3000
+        published: "3067"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/monitoring/grafana/provisioning
+        target: /etc/grafana/provisioning
+        read_only: true
+        bind: {}
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/monitoring/grafana/dashboards
+        target: /var/lib/grafana/dashboards
+        read_only: true
+        bind: {}
+      - type: volume
+        source: grafana-data
+        target: /var/lib/grafana
+        volume: {}
+  mlflow:
+    build:
+      context: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: finbert-mlflow
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/health',
+          timeout=5).status==200 else 1)
+      timeout: 10s
+      interval: 15s
+      retries: 10
+      start_period: 30s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5000
+        published: "5067"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/mlruns
+        target: /mlruns
+        bind: {}
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/mlartifacts
+        target: /mlartifacts
+        bind: {}
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    container_name: finbert-prometheus
+    depends_on:
+      api:
+        condition: service_started
+        required: true
+    image: prom/prometheus:v2.54.1
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 9090
+        published: "9067"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/73983/ws/grabe/cd15155-ml-ops-starter/starter/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+        bind: {}
+      - type: volume
+        source: prom-data
+        target: /prometheus
+        volume: {}
+networks:
+  default:
+    name: starter_default
+volumes:
+  grafana-data:
+    name: starter_grafana-data
+  hf-cache:
+    name: starter_hf-cache
+  prom-data:
+    name: starter_prom-data

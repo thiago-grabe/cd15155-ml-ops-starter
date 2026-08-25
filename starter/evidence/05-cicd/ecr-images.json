@@ -1,0 +1,18 @@
+{
+    "imageIds": [
+        {
+            "imageDigest": "sha256:10d8b0629b1960ec2126303e2b60d84c496587557039a81727b89629099d4907"
+        },
+        {
+            "imageDigest": "sha256:3eae066409b54389c57202290d3f898153e29cdee41c860a9a014be2ca111ce4"
+        },
+        {
+            "imageDigest": "sha256:148d1aed101ecaf9a017f0ae50343d4416ff7f4b32c1c89bfe09d7eab11982e7",
+            "imageTag": "0cca33f-20260825110531"
+        },
+        {
+            "imageDigest": "sha256:148d1aed101ecaf9a017f0ae50343d4416ff7f4b32c1c89bfe09d7eab11982e7",
+            "imageTag": "latest"
+        }
+    ]
+}

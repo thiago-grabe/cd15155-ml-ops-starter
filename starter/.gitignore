@@ -15,7 +15,7 @@ env/
 
 # DVC
 /models
-*.dvc
+# *.dvc  <- REMOVED: this ignored DVC pointer files, which must be committed
 !.dvc
 !.dvc/
 !.dvcignore
@@ -31,3 +31,6 @@ mlartifacts/
 .DS_Store
 .idea/
 .vscode/
+
+# Corporate TLS-inspection CA (local build only) — see docker/certs/README.md
+docker/certs/*.crt

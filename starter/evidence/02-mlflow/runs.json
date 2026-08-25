@@ -1,0 +1,196 @@
+{
+  "runs": [
+    {
+      "info": {
+        "run_uuid": "55659dfa204c4c3aba53e8c442db9a64",
+        "experiment_id": "1",
+        "run_name": "monitoring-20260825-140544",
+        "user_id": "root",
+        "status": "FINISHED",
+        "start_time": 1787666744152,
+        "end_time": 1787666839883,
+        "artifact_uri": "mlflow-artifacts:/1/55659dfa204c4c3aba53e8c442db9a64/artifacts",
+        "lifecycle_stage": "active",
+        "run_id": "55659dfa204c4c3aba53e8c442db9a64"
+      },
+      "data": {
+        "metrics": [
+          {
+            "key": "pct_positive",
+            "value": 72.72727272727273,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "pct_negative",
+            "value": 20.454545454545453,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "pct_neutral",
+            "value": 6.818181818181818,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "avg_confidence",
+            "value": 0.5812046399170702,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "avg_latency_ms",
+            "value": 116.59954545454546,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "window_size",
+            "value": 44.0,
+            "timestamp": 1787666839853,
+            "step": 8
+          },
+          {
+            "key": "failed_requests",
+            "value": 0.0,
+            "timestamp": 1787666839874,
+            "step": 0
+          }
+        ],
+        "params": [
+          {
+            "key": "window_size",
+            "value": "50"
+          },
+          {
+            "key": "n_texts",
+            "value": "444"
+          },
+          {
+            "key": "api_url",
+            "value": "http://api:8000"
+          },
+          {
+            "key": "sleep_ms",
+            "value": "100"
+          }
+        ],
+        "tags": [
+          {
+            "key": "mlflow.user",
+            "value": "root"
+          },
+          {
+            "key": "mlflow.source.name",
+            "value": "monitoring/stream.py"
+          },
+          {
+            "key": "mlflow.source.type",
+            "value": "LOCAL"
+          },
+          {
+            "key": "mlflow.source.git.commit",
+            "value": "0cca33ff64bb3923a8f310c61e72f68e7e8046ea"
+          },
+          {
+            "key": "mlflow.runName",
+            "value": "monitoring-20260825-140544"
+          }
+        ]
+      },
+      "inputs": {}
+    },
+    {
+      "info": {
+        "run_uuid": "c4cbbaa0dc4e42febc3d8def7c34c355",
+        "experiment_id": "1",
+        "run_name": "eval-FinBERT_market_based",
+        "user_id": "root",
+        "status": "FINISHED",
+        "start_time": 1787665893162,
+        "end_time": 1787665901029,
+        "artifact_uri": "mlflow-artifacts:/1/c4cbbaa0dc4e42febc3d8def7c34c355/artifacts",
+        "lifecycle_stage": "active",
+        "run_id": "c4cbbaa0dc4e42febc3d8def7c34c355"
+      },
+      "data": {
+        "metrics": [
+          {
+            "key": "accuracy",
+            "value": 0.6384284837323512,
+            "timestamp": 1787665893442,
+            "step": 0
+          },
+          {
+            "key": "f1_weighted",
+            "value": 0.5900813025649203,
+            "timestamp": 1787665893442,
+            "step": 0
+          },
+          {
+            "key": "precision_weighted",
+            "value": 0.6111085570616606,
+            "timestamp": 1787665893442,
+            "step": 0
+          },
+          {
+            "key": "recall_weighted",
+            "value": 0.6384284837323512,
+            "timestamp": 1787665893442,
+            "step": 0
+          }
+        ],
+        "params": [
+          {
+            "key": "model_id",
+            "value": "baptle/FinBERT_market_based"
+          },
+          {
+            "key": "task",
+            "value": "text-classification"
+          },
+          {
+            "key": "max_length",
+            "value": "512"
+          },
+          {
+            "key": "batch_size",
+            "value": "32"
+          },
+          {
+            "key": "n_test_samples",
+            "value": "1629"
+          }
+        ],
+        "tags": [
+          {
+            "key": "mlflow.user",
+            "value": "root"
+          },
+          {
+            "key": "mlflow.source.name",
+            "value": "scripts/evaluate.py"
+          },
+          {
+            "key": "mlflow.source.type",
+            "value": "LOCAL"
+          },
+          {
+            "key": "mlflow.source.git.commit",
+            "value": "0cca33ff64bb3923a8f310c61e72f68e7e8046ea"
+          },
+          {
+            "key": "mlflow.runName",
+            "value": "eval-FinBERT_market_based"
+          },
+          {
+            "key": "mlflow.log-model.history",
+            "value": "[{\"run_id\": \"c4cbbaa0dc4e42febc3d8def7c34c355\", \"artifact_path\": \"model\", \"utc_time_created\": \"2026-08-25 13:51:33.468313\", \"model_uuid\": \"a0efda6d9c51476d85b5830b080e7dff\", \"flavors\": {\"transformers\": {\"transformers_version\": \"4.44.2\", \"code\": null, \"task\": \"text-classification\", \"instance_type\": \"TextClassificationPipeline\", \"framework\": \"pt\", \"torch_dtype\": \"torch.float32\", \"pipeline_model_type\": \"BertForSequenceClassification\", \"source_model_name\": \"baptle/FinBERT_market_based\", \"model_binary\": \"model\", \"tokenizer_type\": \"BertTokenizerFast\", \"components\": [\"tokenizer\"]}, \"python_function\": {\"loader_module\": \"mlflow.transformers\", \"python_version\": \"3.12.14\", \"env\": {\"conda\": \"conda.yaml\", \"virtualenv\": \"python_env.yaml\"}}}}]"
+          }
+        ]
+      },
+      "inputs": {}
+    }
+  ]
+}

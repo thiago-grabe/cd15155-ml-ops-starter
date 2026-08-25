@@ -1,0 +1,195 @@
+{
+    "services": [
+        {
+            "serviceArn": "arn:aws:ecs:us-east-1:402398991984:service/finbert-cluster/finbert-api-service",
+            "serviceName": "finbert-api-service",
+            "clusterArn": "arn:aws:ecs:us-east-1:402398991984:cluster/finbert-cluster",
+            "loadBalancers": [],
+            "serviceRegistries": [],
+            "status": "ACTIVE",
+            "desiredCount": 1,
+            "runningCount": 1,
+            "pendingCount": 0,
+            "launchType": "FARGATE",
+            "platformVersion": "LATEST",
+            "platformFamily": "Linux",
+            "taskDefinition": "arn:aws:ecs:us-east-1:402398991984:task-definition/finbert-api:2",
+            "deploymentConfiguration": {
+                "deploymentCircuitBreaker": {
+                    "enable": false,
+                    "rollback": false,
+                    "resetOnHealthyTask": true,
+                    "thresholdConfiguration": {
+                        "type": "BOUNDED_PERCENT",
+                        "value": 50
+                    }
+                },
+                "maximumPercent": 200,
+                "minimumHealthyPercent": 100,
+                "strategy": "ROLLING",
+                "bakeTimeInMinutes": 0
+            },
+            "deployments": [
+                {
+                    "id": "ecs-svc/8633597260843981745",
+                    "status": "PRIMARY",
+                    "taskDefinition": "arn:aws:ecs:us-east-1:402398991984:task-definition/finbert-api:2",
+                    "desiredCount": 1,
+                    "pendingCount": 0,
+                    "runningCount": 1,
+                    "failedTasks": 0,
+                    "createdAt": "2026-08-25T11:17:47.198000-03:00",
+                    "updatedAt": "2026-08-25T11:20:45.988000-03:00",
+                    "launchType": "FARGATE",
+                    "platformVersion": "1.4.0",
+                    "platformFamily": "Linux",
+                    "networkConfiguration": {
+                        "awsvpcConfiguration": {
+                            "subnets": [
+                                "subnet-0b8168de87f28c319",
+                                "subnet-040d3d9dc25c97b4d",
+                                "subnet-0827f195fd56530b6",
+                                "subnet-0eaaa06b1fd0d9d7d",
+                                "subnet-0402cafac2911e848",
+                                "subnet-066eb616e0e164e9a"
+                            ],
+                            "securityGroups": [
+                                "sg-05115fbaa74e1a50d"
+                            ],
+                            "assignPublicIp": "ENABLED"
+                        }
+                    },
+                    "rolloutState": "COMPLETED",
+                    "rolloutStateReason": "ECS deployment ecs-svc/8633597260843981745 completed."
+                }
+            ],
+            "roleArn": "arn:aws:iam::402398991984:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "events": [
+                {
+                    "id": "710b7b12-05e6-4aa2-85ff-b4e0af61096a",
+                    "createdAt": "2026-08-25T11:20:45.996000-03:00",
+                    "message": "(service finbert-api-service) has reached a steady state."
+                },
+                {
+                    "id": "313efd6c-be00-431d-82f4-d8dc42e2ee69",
+                    "createdAt": "2026-08-25T11:20:45.995000-03:00",
+                    "message": "(service finbert-api-service) (deployment ecs-svc/8633597260843981745) deployment completed."
+                },
+                {
+                    "id": "a307d2f3-12e6-47f6-b04d-7d4fa482ea41",
+                    "createdAt": "2026-08-25T11:19:23.879000-03:00",
+                    "message": "(service finbert-api-service) has stopped 1 running tasks: (task 07de5cec429046bc81a10410e1becb85)."
+                },
+                {
+                    "id": "100808eb-7594-4bb2-a470-918cc7125404",
+                    "createdAt": "2026-08-25T11:17:53.116000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task 00ab92e224074d888b52abb4972a7df6)."
+                },
+                {
+                    "id": "238c14e7-9f6d-4548-8270-2f321ca20ac9",
+                    "createdAt": "2026-08-25T11:16:25.525000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task 07de5cec429046bc81a10410e1becb85)."
+                },
+                {
+                    "id": "d8a2de01-bd1e-42a0-9666-380100dec413",
+                    "createdAt": "2026-08-25T11:15:52.356000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "e8cfb57b-0194-4f87-9b90-3dcc98937aee",
+                    "createdAt": "2026-08-25T11:14:17.077000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task 187027209af84362b32b55bb555ff3a5)."
+                },
+                {
+                    "id": "d6cbf267-79e4-4513-80d4-87c167bc7e7e",
+                    "createdAt": "2026-08-25T11:13:45.118000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "0cefd014-7f10-4995-8c7f-7a781981c02d",
+                    "createdAt": "2026-08-25T11:12:11.116000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task fe348bb39f464b4cb59156321bca6eff)."
+                },
+                {
+                    "id": "a3e11078-1858-4e25-8aea-62aff4250ead",
+                    "createdAt": "2026-08-25T11:11:39.810000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "563f2936-1c96-4936-aa9a-71f57787d834",
+                    "createdAt": "2026-08-25T11:10:04.364000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task f77ffef8a3ca48bdb315a796731cf03f)."
+                },
+                {
+                    "id": "55619aeb-b54d-42fa-8a8e-cb56dfe9c0d6",
+                    "createdAt": "2026-08-25T11:09:33.687000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "919233a3-3e8b-44a1-a55f-360facfbf821",
+                    "createdAt": "2026-08-25T11:08:06.697000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task 4dbc6099a89b40c6974ce61b7d161cb1)."
+                },
+                {
+                    "id": "9b30ab0d-a39b-47dc-89a1-3e3de113044c",
+                    "createdAt": "2026-08-25T11:07:35.203000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "12357ab9-4f39-462a-9d07-d99b97bbe380",
+                    "createdAt": "2026-08-25T11:06:09.324000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task d0f47ff4b2b04bf7830c858e564bdb46)."
+                },
+                {
+                    "id": "6c5277ad-451a-4cc1-9fc5-1c2c301dacdf",
+                    "createdAt": "2026-08-25T11:05:36.326000-03:00",
+                    "message": "(service finbert-api-service) was unable to place a task. Reason: CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: 402398991984.dkr.ecr.us-east-1.amazonaws.com/finbert-api:latest: not found."
+                },
+                {
+                    "id": "41515e56-e2fb-4473-80ee-9d0eb097dc14",
+                    "createdAt": "2026-08-25T11:04:02.525000-03:00",
+                    "message": "(service finbert-api-service) has started 1 tasks: (task 497f4b3891054dfa8a390d043eadee6c)."
+                }
+            ],
+            "createdAt": "2026-08-25T11:03:47.649000-03:00",
+            "currentServiceRevisions": [
+                {
+                    "arn": "arn:aws:ecs:us-east-1:402398991984:service-revision/finbert-cluster/finbert-api-service/8633597260843981745",
+                    "requestedTaskCount": 1,
+                    "runningTaskCount": 1,
+                    "pendingTaskCount": 0
+                }
+            ],
+            "placementConstraints": [],
+            "placementStrategy": [],
+            "networkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": [
+                        "subnet-0b8168de87f28c319",
+                        "subnet-040d3d9dc25c97b4d",
+                        "subnet-0827f195fd56530b6",
+                        "subnet-0eaaa06b1fd0d9d7d",
+                        "subnet-0402cafac2911e848",
+                        "subnet-066eb616e0e164e9a"
+                    ],
+                    "securityGroups": [
+                        "sg-05115fbaa74e1a50d"
+                    ],
+                    "assignPublicIp": "ENABLED"
+                }
+            },
+            "healthCheckGracePeriodSeconds": 300,
+            "schedulingStrategy": "REPLICA",
+            "deploymentController": {
+                "type": "ECS"
+            },
+            "createdBy": "arn:aws:iam::402398991984:role/voclabs",
+            "enableECSManagedTags": false,
+            "propagateTags": "NONE",
+            "enableExecuteCommand": false,
+            "availabilityZoneRebalancing": "ENABLED",
+            "resourceManagementType": "CUSTOMER"
+        }
+    ],
+    "failures": []
+}

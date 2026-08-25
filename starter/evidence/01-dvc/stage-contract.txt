@@ -1,0 +1,9 @@
+prepare.cmd: 'python scripts/load_data.py' -> OK
+prepare.deps: ['scripts/load_data.py'] -> OK
+prepare.params: ['prepare.data_dir', 'prepare.test_size', 'prepare.random_seed'] -> OK
+prepare.outs: ['data/train.csv', 'data/test.csv'] -> OK
+clean.cmd: 'python scripts/clean_data.py' -> OK
+clean.deps: ['scripts/clean_data.py', 'data/raw_stream.csv'] -> OK
+clean.params: ['clean.data_dir', 'clean.min_words', 'clean.max_words'] -> OK
+clean.outs: ['data/stream.csv'] -> OK
+VERDICT: PASS

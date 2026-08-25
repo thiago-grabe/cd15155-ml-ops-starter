@@ -1,0 +1,10 @@
+{
+  "experiment": {
+    "experiment_id": "1",
+    "name": "finbert-evaluation",
+    "artifact_location": "mlflow-artifacts:/1",
+    "lifecycle_stage": "active",
+    "last_update_time": 1787665893110,
+    "creation_time": 1787665893110
+  }
+}
