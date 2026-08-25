@@ -117,7 +117,14 @@ jobs:
     runs-on: ubuntu-latest     # amd64, matching the Fargate X86_64 task definition
     needs: [test, deepchecks]
     outputs:
-      image: ${{ steps.build.outputs.image }}
+      # Only the TAG crosses the job boundary, never the full image URI.
+      # AWS_REGION is stored as a repository secret, so every occurrence of the region
+      # is masked -- including inside "<acct>.dkr.ecr.<region>.amazonaws.com". GitHub
+      # refuses to pass a job output that contains a masked value and silently drops it
+      # ("Skip output 'image' since it may contain secret"), which surfaced much later as
+      # "Input required and not supplied: image" in the deploy job. The tag is
+      # <short-sha>-<timestamp> and contains nothing sensitive, so it survives.
+      tag: ${{ steps.build.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
 
@@ -146,7 +153,7 @@ jobs:
           docker push "$IMAGE"
           docker push "$LATEST"
 
-          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Pushed $IMAGE and $LATEST"
 
   deploy:
@@ -186,6 +193,25 @@ jobs:
                 )' > "$GITHUB_WORKSPACE/task-definition.json"
           echo "Fields stripped: register-task-definition rejects all nine read-only keys."
 
+      # The registry is resolved here rather than carried over from the build job,
+      # because the full URI embeds the masked region (see the build job's outputs).
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Resolve the image URI
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          if [ -z "$TAG" ]; then
+            echo "::error::build job produced no tag; refusing to deploy an unknown image"
+            exit 1
+          fi
+          echo "uri=$REGISTRY/$ECR_REPOSITORY:$TAG" >> "$GITHUB_OUTPUT"
+          echo "Deploying $ECR_REPOSITORY:$TAG"
+
       - name: Render task definition with the new image
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -193,7 +219,7 @@ jobs:
           # Repo-root-relative: `uses:` inputs ignore defaults.run.working-directory.
           task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ needs.build.outputs.image }}
+          image: ${{ steps.image.outputs.uri }}
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2

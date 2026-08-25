@@ -1,8 +1,8 @@
 # Rubric Evidence Pack
 
-Generated: 2026-08-25T14:23:34.993642+00:00
+Generated: 2026-08-25T15:00:45.030485+00:00
 
-**PASS 34 · FAIL 0 · SKIP 1**
+**PASS 35 · FAIL 0 · SKIP 0**
 
 Every row below is produced by `./evidence/collect_evidence.sh`. Artifacts are
 machine-generated; nothing here is hand-written after the fact.
@@ -30,23 +30,19 @@ Re-run with the stack up (`docker compose up -d`) to refresh.
 | 4.1 | Dockerfile: slim base, reqs install, COPY app/, EXPOSE 8000, CMD | **PASS** | [`04-docker/Dockerfile`](04-docker/Dockerfile) | all five anchors present |
 | 4.2 | compose api: build, ports, env_file, mlruns+mlartifacts, extra_hosts, healthcheck | **PASS** | [`04-docker/compose-contract.txt`](04-docker/compose-contract.txt) | all six keys present |
 | 4.3 | api container reports healthy | **PASS** | [`04-docker/compose-ps.json`](04-docker/compose-ps.json) | health=healthy |
-| 4.4 | Slim CPU-only image size recorded (stand-out) | **PASS** | [`04-docker/image-sizes.txt`](04-docker/image-sizes.txt) | starter-tooling:latest  4.06GB |
+| 4.4 | Slim CPU-only image size recorded (stand-out) | **PASS** | [`04-docker/image-sizes.txt`](04-docker/image-sizes.txt) | starter-api:latest  3.07GB |
 | 5.1 | run_deepchecks: 2 TextData, property+prediction drift, non-zero exit | **PASS** | [`05-cicd/run_deepchecks.py`](05-cicd/run_deepchecks.py) | TextData=2 prop=yes pred=yes exit=yes |
 | 5.2 | Drift gate executes and passes on current data | **PASS** | [`05-cicd/deepchecks-run.txt`](05-cicd/deepchecks-run.txt) | exit=0 |
 | 5.3 | ci-cd.yml on push:main with test/deepchecks/build/deploy job graph | **PASS** | [`05-cicd/workflow-contract.txt`](05-cicd/workflow-contract.txt) | job graph correct |
-| 5.4 | GitHub actually registers the workflow | **SKIP** | [`05-cicd/gh-workflow-list.txt`](05-cicd/gh-workflow-list.txt) | not registered until pushed to the default branch |
+| 5.4 | GitHub actually registers the workflow | **PASS** | [`05-cicd/gh-workflow-list.txt`](05-cicd/gh-workflow-list.txt) | visible to GitHub |
 | 5.5 | Image present in ECR | **PASS** | [`05-cicd/ecr-images.json`](05-cicd/ecr-images.json) | 4 images |
 | 5.6 | ECS service running the deployed task | **PASS** | [`05-cicd/ecs-service.json`](05-cicd/ecs-service.json) | runningCount=1 |
 | 6.1 | Counter(sentiment) + Histogram + error Counter + /metrics exposition | **PASS** | [`03-api/main.py`](03-api/main.py) | Counters=2 Histogram=yes generate_latest=yes |
-| 6.2 | /metrics exposes all three instrument families | **PASS** | [`06-monitoring/metrics.txt`](06-monitoring/metrics.txt) | requests=3 latency_buckets=12 errors=1 |
-| 6.3 | Structured JSON logs with timestamp/level/message | **PASS** | [`06-monitoring/api-logs.txt`](06-monitoring/api-logs.txt) | 474/474 lines valid |
+| 6.2 | /metrics exposes all three instrument families | **PASS** | [`06-monitoring/metrics.txt`](06-monitoring/metrics.txt) | requests=1 latency_buckets=12 errors=1 |
+| 6.3 | Structured JSON logs with timestamp/level/message | **PASS** | [`06-monitoring/api-logs.txt`](06-monitoring/api-logs.txt) | 11/11 lines valid |
 | 6.4 | prometheus.yml: job finbert-api, 15s, target api:8000 | **PASS** | [`06-monitoring/prometheus-contract.txt`](06-monitoring/prometheus-contract.txt) | all three present |
 | 6.5 | Prometheus is actually scraping the API | **PASS** | [`06-monitoring/prometheus-targets.json`](06-monitoring/prometheus-targets.json) | target health=up |
 | 6.6 | stream.py logs 5 window metrics to MLflow with step index | **PASS** | [`06-monitoring/stream.py`](06-monitoring/stream.py) | log_window=3 step=yes metrics=5 |
 | 6.7 | Grafana dashboard JSON committed (stand-out) | **PASS** | [`06-monitoring/grafana-dashboard.json`](06-monitoring/grafana-dashboard.json) | 6 panels |
 | 6.8 | Deploy approval gate via GitHub environment (stand-out) | **PASS** | [`05-cicd/ci-cd.yml`](05-cicd/ci-cd.yml) | environment: production on deploy job |
 | 6.9 | Model rollback workflow + script (stand-out) | **PASS** | [`05-cicd/rollback.yml`](05-cicd/rollback.yml) | workflow_dispatch + scripts/rollback.py |
-
-## Not verified in this run
-
-- **5.4 GitHub actually registers the workflow** — not registered until pushed to the default branch

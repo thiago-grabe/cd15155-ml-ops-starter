@@ -102,6 +102,37 @@ gh secret set AWS_REGION            --body "us-east-1"
 gh secret set ECR_REGISTRY          --body "402398991984.dkr.ecr.us-east-1.amazonaws.com"
 ```
 
+### A gotcha: `AWS_REGION` as a secret masks your logs
+
+The project brief has you run `gh secret set AWS_REGION`. That works, but it has a
+non-obvious cost: GitHub masks every occurrence of a secret's value, so `us-east-1` is
+replaced with `***` everywhere it appears — including inside the ECR registry hostname:
+
+```
+Pushed 402398991984.dkr.ecr.***.amazonaws.com/finbert-api:abc1234-20260825150439
+```
+
+More seriously, **GitHub refuses to pass a job output containing a masked value** and drops
+it silently:
+
+```
+##[warning]Skip output 'image' since it may contain secret.
+```
+
+The build job appears to succeed, and the failure only surfaces one job later as
+`Input required and not supplied: image`.
+
+The pipeline works around this by passing only the image **tag** between jobs and
+re-resolving the registry inside the deploy job, so it is correct whether or not the
+region is a secret.
+
+If you would rather fix the cause, store the region as a repository *variable* instead —
+a region is not sensitive:
+
+```bash
+gh variable set AWS_REGION --body "us-east-1"     # then use ${{ vars.AWS_REGION }}
+```
+
 ### Credential refresh runbook
 
 When the pipeline starts failing with `ExpiredToken` or `InvalidClientTokenId`:

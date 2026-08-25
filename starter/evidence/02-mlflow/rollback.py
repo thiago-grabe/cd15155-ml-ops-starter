@@ -36,7 +36,7 @@ def current_production_version(client: MlflowClient, model_name: str) -> int | N
     try:
         mv = client.get_model_version_by_alias(model_name, PRODUCTION_ALIAS)
         return int(mv.version)
-    except Exception:
+    except Exception:  # noqa: BLE001 - "no alias set yet" is a normal, expected state
         return None
 
 
