@@ -5,16 +5,26 @@ Endpoints:
     GET  /health          — service health status
     POST /predict         — single headline sentiment
     POST /predict/batch   — batch headline sentiment
+    GET  /metrics         — Prometheus metrics
 """
 
+import json
 import logging
 import os
 import sys
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    REGISTRY,
+    Counter,
+    Histogram,
+    generate_latest,
+)
 from pydantic import BaseModel
 
 # `python app/main.py` puts app/ on sys.path (flat import works, `app` package does not).
@@ -26,15 +36,58 @@ try:
 except ModuleNotFoundError:
     from utils import load_classifier
 
+# `format="%(message)s"` is required: the default formatter prefixes "INFO:root:",
+# which would make every line invalid JSON and break log ingestion.
 logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
 logger = logging.getLogger("finbert-api")
 
 
 def log(level: str, message: str, **kwargs) -> None:
-    """Emit a log record. Upgraded to structured JSON in the monitoring change."""
-    extra = "  ".join(f"{k}={v}" for k, v in kwargs.items())
-    logger.log(getattr(logging, level.upper(), logging.INFO), f"{message} {extra}".strip())
+    """Emit one structured log record as a single-line JSON object."""
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "level": level.upper(),
+        "message": message,
+        **kwargs,
+    }
+    logger.log(getattr(logging, level.upper(), logging.INFO), json.dumps(record))
 
+
+def _get_or_create(metric_cls, name: str, documentation: str, **kwargs):
+    """Build a Prometheus collector, tolerating a repeated module import.
+
+    Collectors are process-global. tests/conftest.py places BOTH the project root and
+    app/ on sys.path, so this module can be imported under two distinct names; the
+    second import re-runs this body and plain construction would raise
+    "Duplicated timeseries in CollectorRegistry".
+    """
+    try:
+        return metric_cls(name, documentation, **kwargs)
+    except ValueError:
+        existing = getattr(REGISTRY, "_names_to_collectors", {})
+        for candidate in (name, f"{name}_total"):
+            if candidate in existing:
+                return existing[candidate]
+        raise
+
+
+PREDICTION_REQUESTS = _get_or_create(
+    Counter,
+    "prediction_requests_total",
+    "Total number of prediction requests, labelled by predicted sentiment.",
+    labelnames=["sentiment"],
+)
+PREDICTION_LATENCY = _get_or_create(
+    Histogram,
+    "prediction_latency_ms",
+    "Prediction latency in milliseconds.",
+    buckets=(5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000),
+)
+PREDICTION_ERRORS = _get_or_create(
+    Counter,
+    "prediction_errors_total",
+    "Total number of prediction errors.",
+)
 
 load_dotenv()
 
@@ -79,7 +132,7 @@ app = FastAPI(title="Sentiment Analysis API", lifespan=lifespan)
 
 
 def run_predictions(texts: list[str]) -> list[PredictionResult]:
-    """Run batch inference and return one result per input text."""
+    """Run batch inference and record Prometheus metrics for every prediction."""
     try:
         for text in texts:
             if len(text) > MAX_TEXT_CHARS:
@@ -97,7 +150,7 @@ def run_predictions(texts: list[str]) -> list[PredictionResult]:
             texts, truncation=True, max_length=MODEL_MAX_TOKENS
         )
         total_ms = (time.perf_counter() - start) * 1000.0
-        # Per-item latency, so the number means "latency per prediction" identically
+        # Per-item latency, so the histogram means "latency per prediction" identically
         # for /predict and /predict/batch.
         latency_ms = round(total_ms / max(len(texts), 1), 2)
 
@@ -105,6 +158,19 @@ def run_predictions(texts: list[str]) -> list[PredictionResult]:
         for text, item in zip(texts, raw):
             sentiment = str(item["label"]).lower()
             confidence = float(item["score"])
+
+            PREDICTION_REQUESTS.labels(sentiment=sentiment).inc()
+            # Explicit .observe() — never PREDICTION_LATENCY.time(), which records
+            # SECONDS and would be 1000x wrong on a _ms metric.
+            PREDICTION_LATENCY.observe(latency_ms)
+
+            log(
+                "INFO",
+                "prediction",
+                sentiment=sentiment,
+                confidence=round(confidence, 4),
+                latency_ms=latency_ms,
+            )
             results.append(
                 PredictionResult(
                     text=text,
@@ -115,6 +181,7 @@ def run_predictions(texts: list[str]) -> list[PredictionResult]:
             )
         return results
     except Exception as e:
+        PREDICTION_ERRORS.inc()
         log("ERROR", "Prediction failed", error=str(e), error_type=type(e).__name__)
         raise
 
@@ -133,6 +200,11 @@ def _require_model() -> None:
     """
     if classifiers.get("sentiment") is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/health")
