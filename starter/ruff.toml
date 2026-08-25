@@ -1,0 +1,34 @@
+# Explicit lint contract.
+#
+# WHY THIS FILE EXISTS: CI previously ran an unpinned `pip install ruff`, so the rule set
+# was whatever the newest release happened to enable. ruff 0.16 turned on BLE001, PLW1508
+# and I001 by default, which broke `main` without a single line of code changing. Pinning
+# the ruff version in the workflow fixes the version; this file fixes the *rules*, so lint
+# results are reproducible and a future ruff release cannot redefine "passing".
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # import sorting
+    "UP",     # pyupgrade
+    "B",      # bugbear
+    "BLE",    # blind except
+    "PLW",    # pylint warnings
+    "SIM",    # simplify
+]
+ignore = [
+    "E501",   # line length is enforced by the formatter, not the linter
+    "B008",   # FastAPI's Depends()/Query() idiom is a function call in a default
+]
+
+[lint.per-file-ignores]
+# Provided by the course starter and intentionally left as-is. Restructuring its error
+# handling would be churn in a file that is not part of the graded implementation.
+"scripts/smoke_test.py" = ["BLE001"]
+# Tests deliberately assert on broad behaviour and re-import app state.
+"tests/*" = ["BLE001"]

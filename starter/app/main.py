@@ -14,7 +14,7 @@ import os
 import sys
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Response
@@ -45,7 +45,7 @@ logger = logging.getLogger("finbert-api")
 def log(level: str, message: str, **kwargs) -> None:
     """Emit one structured log record as a single-line JSON object."""
     record = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "level": level.upper(),
         "message": message,
         **kwargs,
@@ -118,7 +118,7 @@ async def lifespan(app: FastAPI):
     try:
         classifiers["sentiment"] = load_classifier()
         log("INFO", "Model loaded successfully")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - startup must survive ANY load failure
         # Do not abort startup: an unloaded model must surface as HTTP 503 from
         # /health so the orchestrator can restart us, rather than a crash loop
         # that never binds a port and reports nothing useful.
@@ -155,7 +155,7 @@ def run_predictions(texts: list[str]) -> list[PredictionResult]:
         latency_ms = round(total_ms / max(len(texts), 1), 2)
 
         results = []
-        for text, item in zip(texts, raw):
+        for text, item in zip(texts, raw, strict=True):
             sentiment = str(item["label"]).lower()
             confidence = float(item["score"])
 
@@ -243,5 +243,5 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host=os.getenv("API_HOST", "0.0.0.0"),
-        port=int(os.getenv("API_PORT", 8000)),
+        port=int(os.getenv("API_PORT", "8000")),
     )
