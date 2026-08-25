@@ -31,7 +31,7 @@ load_dotenv()
 # explicit API_URL takes precedence. Inside compose this is http://api:8000.
 API_URL = os.getenv(
     "API_URL",
-    f"http://{os.getenv('API_HOST', 'localhost')}:{os.getenv('API_PORT', 8000)}",
+    f"http://{os.getenv('API_HOST', 'localhost')}:{os.getenv('API_PORT', '8000')}",
 )
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME", "finbert-evaluation")
@@ -101,7 +101,7 @@ def main():
         for i, text in enumerate(texts, start=1):
             try:
                 window.append(predict(text))
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - one bad row must not end the stream
                 failures += 1
                 print(f"[WARN] row {i} failed: {e}")
                 continue

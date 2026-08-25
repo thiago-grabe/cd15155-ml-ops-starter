@@ -45,7 +45,7 @@ def test_predict_batch(client: TestClient):
     body = response.json()
     assert isinstance(body, list)
     assert len(body) == len(HEADLINES)
-    for item, expected_text in zip(body, HEADLINES):
+    for item, expected_text in zip(body, HEADLINES, strict=True):
         _assert_valid_result(item, expected_text)
 
 

@@ -37,7 +37,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      # Pinned: an unpinned ruff broke main when 0.16 enabled new rules by
+      # default. Rules themselves are pinned in starter/ruff.toml.
+      - run: pip install ruff==0.16.4
       - run: ruff check app/ scripts/ tests/ monitoring/
 
   test:
